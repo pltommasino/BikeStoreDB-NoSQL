@@ -20,6 +20,7 @@ MongoDB stores data in flexible documents. Instead of having multiple tables you
 MongoDB can be installed locally, which will allow you to host your own MongoDB server on your hardware. This requires you to manage your server, upgrades, and any other maintenance.
 
 <br>
+
 For this project we are going to use *MongoDB Atlas*, a cloud database platform. In this, we set up a free "Shared Cluster" then choose preferred cloud provider and region. By default, MongoDB Atlas is completely locked down and has no external access. You will need to set up a user and add your IP address to the list of allowed IP addresses.
 
 ## SCRIPT
