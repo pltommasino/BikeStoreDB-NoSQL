@@ -13,9 +13,12 @@ The purpose of this project is to use a NoSQL tool (in our case we use MongoDB, 
 
 MongoDB is a document database which is often referred to as a non-relational database. This does not mean that relational data cannot be stored in document databases. It means that relational data is stored differently. A better way to refer to it is as a non-tabular database.
 <br>
+
 MongoDB stores data in flexible documents. Instead of having multiple tables you can simply keep all of your related data together. This makes reading data very fast. It can still have multiple groups of data too. In MongoDB, instead of tables these are called ***collections***.
+
 <br>
 MongoDB can be installed locally, which will allow you to host your own MongoDB server on your hardware. This requires you to manage your server, upgrades, and any other maintenance.
+
 <br>
 For this project we are going to use *MongoDB Atlas*, a cloud database platform. In this, we set up a free "Shared Cluster" then choose preferred cloud provider and region. By default, MongoDB Atlas is completely locked down and has no external access. You will need to set up a user and add your IP address to the list of allowed IP addresses.
 
