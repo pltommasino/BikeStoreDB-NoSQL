@@ -13,7 +13,7 @@ on their total cost in descending order.
 */
 
 db.getCollection('Order_items').aggregate([
-  //Project: allow us to select the column
+  //PROJECT: allow us to select the column
   {
     $project: { 
       order_id: 1, 
@@ -21,71 +21,74 @@ db.getCollection('Order_items').aggregate([
       { $round: [ { $subtract: [ {$multiply: ['$list_price', '$quantity']}, {$multiply: [{$multiply: ['$list_price', '$quantity']}, '$discount']} ]} , 2] }
     }
   },
-  //Group: by 'order_id' and sum their 'totalcost'
+  //GROUP: by 'order_id' and sum their 'totalcost'
   {
     $group: {
       _id: '$order_id',
       totalcost: { $sum: '$totalcost' }
     }
   },
-  //Sort: in descendigly order by 'totalcost'
+  //SORT: in descendigly order by 'totalcost'
   {
     $sort: {
       totalcost: -1
     }
   },
-  //Limit: print the first 3 result
+  //LIMIT: limit to the top 3 result
   {
     $limit: 3
   }
 ])
 
 
-db.getCollection('Order').aggregate([
-  //JOIN: with Order_items
+/* 
+-------------------------------------------------------------------
+#                             QUERY 3                             #
+#   Name of the 3 most featured (present) brand in the products   #
+-------------------------------------------------------------------
+______________________________________________________________________________________________________________________________
+This aggregation query outputs the brand_id, brand_name, and count_brand of the 3 most featured brands in the products collection.
+*/
+
+db.getCollection('Products').aggregate([
+  //GROUP: Group by Brand_ID and count the number of products per brand
+  {
+    $group: {
+      _id: '$brand_id',
+      count_brand: { $sum: 1 }
+    }
+  }
+  ,
+  //SORT: Order by Count_Brand in descending order
+  {
+    $sort: {
+      count_brand: -1
+    }
+  },
+  //LIMIT: Limit to the top 3 brands
+  {
+    $limit: 3
+  },
+  //LOOKUP: Join with the brands collection to get brand details
   {
     $lookup: {
-      from: 'Order_items',
-      localField: 'order_id',
-      foreignField: 'order_id',
-      as: 'Order_ID'
+      from: 'Brands',
+      localField: '_id',
+      foreignField: 'brand_id',
+      as: 'brand_details'
     }
   },
+  //UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
   {
-    $unwind: {
-      path: '$Order_ID',
-      preserveNullAndEmptyArrays: false
-    }
+    $unwind: '$brand_details'
   },
-  //JOIN: with Customers
+  //PROJECT: allow us to select the column
   {
-    $lookup: {
-      from: 'Customers',
-      localField: 'customer_id',
-      foreignField: 'customer_id',
-      as: 'Customer_ID'
+    $project: {
+      _id: 0,
+      brand_id: '$_id',
+      brand_name: '$brand_details.brand_name',
+      count_brand: 1
     }
-  },
-  {
-    $unwind: {
-      path: '$Customer_ID',
-      preserveNullAndEmptyArrays: false
-    }
-  },
-  //JOIN: with Stores
-  {
-    $lookup: {
-      from: 'Stores',
-      localField: 'store_id',
-      foreignField: 'store_id',
-      as: 'Store_ID'
-    }
-  },
-  {
-    $unwind: {
-      path: '$Store_ID',
-      preserveNullAndEmptyArrays: false
-    }
-  },
-  {}
-])
+  }
+]);
