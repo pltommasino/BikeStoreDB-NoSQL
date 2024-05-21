@@ -12,9 +12,30 @@
 // Select the database to use.
 use('BikeStoreDB');
 
+db.getCollection('Order_items').aggregate([
+  {
+    //Project: allow us to select the column
+    $project: { 
+      order_id: 1, 
+      totalcost: { $round: [
+      { $subtract: [ 
+          {$multiply: ['$list_price', '$quantity']}, 
+          {$multiply: [{$multiply: ['$list_price', '$quantity']}, '$discount']}
+        ]}
+        , 2]}
+      },
+    $group: { _id: '$order_id'}
+  }
+])
+
+
+
+
 // Run a find command to view items sold on April 4th, 2014.
-const salesOnApril4th = db.getCollection('sales').find({
-  date: { $gte: new Date('2014-04-04'), $lt: new Date('2014-04-05') }
+const salesOnApril4th = db.getCollection('Order_items').find({
+  Order_ID: 
+  { $gte: new Date('2014-04-04'), 
+  $lt: new Date('2014-04-05') }
 }).count();
 
 // Print a message to the output window.

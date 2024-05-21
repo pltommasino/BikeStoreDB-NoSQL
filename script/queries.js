@@ -92,3 +92,45 @@ db.getCollection('Products').aggregate([
     }
   }
 ]);
+
+
+/* 
+-------------------------------------------------------------------
+#                             QUERY 5                             #
+#                       Average order price                       #
+-------------------------------------------------------------------
+______________________________________________________________________________________________________________________________
+In the fifth query we wanted to show the average order price among all the orders.
+*/
+
+db.getCollection('Order_items').aggregate([
+  //PROJECT: allow us to select the column
+  {
+      $project: { 
+          order_id: 1, 
+          totalcost: 
+          { $subtract: [ {$multiply: ['$list_price', '$quantity']}, {$multiply: [{$multiply: ['$list_price', '$quantity']}, '$discount']} ]}
+      }
+  },
+  //GROUP: by 'order_id' and sum their 'totalcost'
+  {
+      $group: {
+          _id: '$order_id',
+          totalcost: { $sum: '$totalcost' }
+      }
+  },
+  //GROUP: group for take the mean of the all 'totalcost'
+  {
+      $group: {
+          _id: null,
+          full_order_price_average: {$avg: '$totalcost'}
+      }
+  },
+  //PROJECT: select only the 'full_order_price_average' column, and take only two value after comma ($round)
+  {
+      $project: {
+          _id: 0,
+          full_order_price_average: {$round: ['$full_order_price_average', 2]}
+      }
+  }
+])
