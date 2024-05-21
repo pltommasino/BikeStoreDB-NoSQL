@@ -134,3 +134,89 @@ db.getCollection('Order_items').aggregate([
       }
   }
 ])
+
+/* 
+-------------------------------------------------------------------
+#                             QUERY 7                             #
+#                The 3 best-selling products details              #
+-------------------------------------------------------------------
+______________________________________________________________________________________________________________________________
+In this query we want to show the name and quantity of 3 best-selling product.
+*/
+
+db.getCollection('Products').aggregate([
+  //LOOKUP: join with Order_items
+  {
+    $lookup: {
+      from: 'Order_items',
+      localField: 'product_id',
+      foreignField: 'product_id',
+      as: 'order_details'
+    }
+  },
+  //UNWIND: Deconstructs an array field from the input documents to output a document for each element.
+  {
+    $unwind: '$order_details'
+  },
+  //LOOKUP: join with Categories
+  {
+      $lookup: {
+        from: 'Categories',
+        localField: 'category_id',
+        foreignField: 'category_id',
+        as: 'category_details'
+      }
+  },
+  //UNWIND: Deconstructs an array field from the input documents to output a document for each element.
+  {
+      $unwind: '$category_details'
+  },
+  //PROJECT: allow us to select the column
+  {
+      $project: {
+          _id: 0,
+          product_id: 1,
+          product_name: 1,
+          model_year: 1,
+          list_price: 1,
+          quantity: '$order_details.quantity',
+          category_name: '$category_details.category_name'
+      }
+  },
+  //GROUP: group by product and sum the quantity sold ('total_quantitysold')
+  {
+      $group: {
+          _id: {
+              product_id: '$product_id',
+              product_name: '$product_name',
+              category_name: '$category_name',
+              model_year: '$model_year',
+              list_price: '$list_price'
+          },
+          total_quantitysold: {$sum: '$quantity'},
+      }
+  },
+  //SORT: in descendigly order by 'total_quantitysold'
+  {
+      $sort: {
+          total_quantitysold: -1
+      }
+  },
+  //LIMIT: limit to the top 3 result
+  {
+      $limit: 3
+  },
+  //PROJECT: allow us to select the column
+  {
+      $project: {
+          _id: 0,
+          product_id: '$_id.product_id',
+          product_name: '$_id.product_name',
+          model_year: '$_id.model_year',
+          list_price: '$_id.list_price',
+          quantity: '$_id.quantity',
+          category_name: '$_id.category_name',
+          total_quantitysold: 1
+      }
+  }
+]);
