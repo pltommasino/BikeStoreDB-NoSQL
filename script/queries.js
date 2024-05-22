@@ -1,6 +1,49 @@
 // Select the database to use.
 use('BikeStoreDB');
 
+/* 
+______________________________________________________________________________________________________________________________
+This space is dedicated to update date columns in Orders collections
+*/
+
+//UPDATE 'order_date' column in 'Orders' collection
+db.Orders.updateMany({}, [
+  {
+    $set: {
+      order_date: {
+        $toDate: "$order_date"
+      }
+    }
+  }
+]);
+
+//UPDATE 'required_date' column in 'Orders' collection
+db.Orders.updateMany({}, [
+  {
+    $set: {
+      required_date: {
+        $toDate: "$required_date"
+      }
+    }
+  }
+]);
+
+//UPDATE 'shipped_date' column in 'Orders' collection
+db.Orders.updateMany({
+  shipped_date: {$ne: NaN} }, 
+  [
+      {
+          $set: {
+              shipped_date: {
+                  $toDate: '$shipped_date'
+              }
+          }
+      }
+]);
+/* 
+______________________________________________________________________________________________________________________________
+*/
+
 
 /* 
 -----------------------------------
@@ -38,6 +81,100 @@ db.getCollection('Order_items').aggregate([
   {
     $limit: 3
   }
+])
+
+
+/* 
+--------------------------------------------
+#             QUERY 2                      #
+#   The 3 most expensive orders' details   #
+--------------------------------------------
+*/
+
+db.getCollection('Order_items').aggregate([
+  {
+  $project: { 
+    order_id: 1, 
+    totalcost: 
+    { $round: [ { $subtract: [ {$multiply: ['$list_price', '$quantity']}, {$multiply: [{$multiply: ['$list_price', '$quantity']}, '$discount']} ]} , 2] }
+  }
+},
+//GROUP: by 'order_id' and sum their 'totalcost'
+{
+  $group: {
+    _id: '$order_id',
+    totalcost: { $sum: '$totalcost' }
+  }
+},
+//SORT: in descendigly order by 'totalcost'
+{
+  $sort: {
+    totalcost: -1
+  }
+},
+//LIMIT: limit to the top 3 result
+{
+  $limit: 3
+},
+//LOOKUP: Join with the categories collection to get categories details
+{
+  $lookup: {
+    from: 'Orders',
+    localField: '_id',
+    foreignField: 'order_id',
+    as: 'order_details'
+  }
+},
+//UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+{
+  $unwind: '$order_details'
+},
+    //LOOKUP: Join with the categories collection to get categories details
+{
+  $lookup: {
+    from: 'Customers',
+    localField: 'order_details.customer_id',
+    foreignField: 'customer_id',
+    as: 'customer_details'
+  }
+},
+//UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+{
+  $unwind: '$customer_details'
+},
+      //LOOKUP: Join with the categories collection to get categories details
+{
+  $lookup: {
+    from: 'Stores',
+    localField: 'order_details.store_id',
+    foreignField: 'store_id',
+    as: 'store_details'
+  }
+},
+//UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+{
+  $unwind: '$store_details'
+},
+//SORT: Order by CategoryCount_inProduct in descending order
+{
+  $sort: {
+    _id: 1
+  }
+},
+{
+  $project: { 
+    _id: 0,
+    Customer_ID: '$order_details.customer_id', 
+    Customer_FirstName: '$customer_details.first_name',
+    Customer_LastName: '$customer_details.last_name',
+    Customer_City: '$customer_details.city',
+    Customer_ZipCode: '$customer_details.zip_code',
+    Customer_State: '$customer_details.state',
+    Store_name: '$store_details.store_name',
+    Store_State: '$store_details.state',
+    Store_ZipCode: '$store_details.zip_code'
+  }
+}
 ])
 
 
@@ -95,6 +232,52 @@ db.getCollection('Products').aggregate([
 
 
 /* 
+--------------------------------------------------
+#             QUERY 4                            #
+#   Number of bicycles in stock group by Store   #
+--------------------------------------------------
+*/
+
+db.getCollection('Stores').aggregate([
+  //LOOKUP: Join with the stocks collection to get stocks details
+{
+  $lookup: {
+    from: 'Stocks',
+    localField: 'store_id',
+    foreignField: 'store_id',
+    as: 'store_details'
+  }
+},
+//UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+{
+  $unwind: '$store_details'
+},
+//GROUP: Group by store_name and store_state and count the number of bibycle per store
+{
+  $group: {
+    _id: {store_name: '$store_name', state: '$state'},
+    Total_Bicycle_In_Stocks: { $sum : '$store_details.quantity'}
+  }
+},
+//SORT: Order by Total_Bicycle_In_Stocks in descending order
+{
+  $sort: {
+    Total_Bicycle_In_Stocks: -1
+  }
+},
+//PROJECT: allow us to select the column
+{
+  $project: {
+    _id: 0,
+    store_name: '$_id.store_name',
+    state: '$_id.state',
+    Total_Bicycle_In_Stocks: '$Total_Bicycle_In_Stocks'
+  }
+}
+])
+
+
+/* 
 -------------------------------------------------------------------
 #                             QUERY 5                             #
 #                       Average order price                       #
@@ -134,6 +317,9 @@ db.getCollection('Order_items').aggregate([
       }
   }
 ])
+
+
+
 
 /* 
 -------------------------------------------------------------------
@@ -220,3 +406,251 @@ db.getCollection('Products').aggregate([
       }
   }
 ]);
+
+/* 
+--------------------------------------------------
+#             QUERY 8                            #
+#   The most featured category in the products   #
+--------------------------------------------------
+*/
+
+db.getCollection('Products').aggregate([
+  //LOOKUP: Join with the categories collection to get categories details
+{
+  $lookup: {
+    from: 'Categories',
+    localField: 'category_id',
+    foreignField: 'category_id',
+    as: 'category_details'
+  }
+},
+//UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+{
+  $unwind: '$category_details'
+},
+//MATCH: Selects only the documents in which category_details is not empty
+{
+  $match: {
+      "category_details": {$ne: []}
+  }
+},
+//GROUP: Group by category_id and category_name and count the number of occurrance per category
+{
+  $group: {
+    _id: {category_id: '$category_id', category_name: '$category_details.category_name'},
+    CategoryCount_inProduct: { $count: {}}
+  }
+},
+//SORT: Order by CategoryCount_inProduct in descending order
+{
+  $sort: {
+    CategoryCount_inProduct: -1
+  }
+},
+//PROJECT: allow us to select the column
+{
+  $project: {
+    _id: 0,
+    category_id: '$_id.category_id',
+    category_name: '$_id.category_name',
+    CategoryCount_inProduct: '$CategoryCount_inProduct'
+  }
+},
+//LIMIT: limit to the top 3 result
+{
+    $limit: 3
+}
+])
+
+
+/* 
+-------------------------------------------------------------------------------------------------------------------
+#                                                   QUERY 9                                                       #
+# Stores with number of shipped orders in a time above the average shipping time (of all store), grouped by store #
+-------------------------------------------------------------------------------------------------------------------
+______________________________________________________________________________________________________________________________
+In this query we want to show for each store the number of orders that have been shipped in a time above the average shipping 
+time computed among all the orders.
+*/
+
+const avgDatediffResult = db.getCollection('Orders').aggregate([
+  //MATCH: Select only the 'order_status' equal to 4
+  {
+      $match: {
+          order_status: 4
+      }
+  },
+  //GROUP: Group to calculate the average of days passed from 'order_date' to 'shipped_date'
+  {
+      $group: {
+          _id: null,
+          avg_datediff: {
+              $avg: {
+                  $dateDiff: {
+                      startDate: '$order_date',
+                      endDate: '$shipped_date',
+                      unit: 'day'
+                  }
+              }
+          }
+      }
+  },
+  //PROJECT: Select only the result of 'avg_datediff' 
+  {
+      $project: {
+        _id: 0,
+        avg_datediff: {$round: '$avg_datediff'}
+      }
+  }
+  //Transform it into array
+]).toArray();
+
+//Create another constant to extract the result...
+const avgDatediff = avgDatediffResult[0].avg_datediff;
+
+//... for adding it, in all documents in the 'Orders' collection
+db.getCollection('Orders').updateMany(
+  //SET: Add the new column with the specific value of 'avgDateDiff'
+  {
+      $set: { avg_datediff: avgDatediff }
+  }
+);
+
+db.getCollection('Orders').aggregate([
+  //MATCH: Select only the 'order_status' equal to 4
+  {
+      $match: {
+          order_status: 4
+      }
+  },
+  //ADDFIELDS: Add a column with the difference of 'shipped_date' and 'order_date'
+  {
+      $addFields: {
+          datediff: {
+              $dateDiff: {
+                  startDate: '$order_date',
+                  endDate: '$shipped_date',
+                  unit: 'day'
+              }
+          }
+      }
+  },
+  //LOOKUP: join with 'Stores'
+  {
+      $lookup: {
+        from: 'Stores',
+        localField: 'store_id',
+        foreignField: 'store_id',
+        as: 'store_result'
+      }
+  },
+  //UNWIND: Deconstructs an array field from the input documents to output a document for each element.
+  {
+      $unwind: '$store_result'
+  },
+  //PROJECT: Select only the relevant columns for an easy calculation
+  {
+      $project: {
+          store_id: 1,
+          avg_datediff: 1,
+          datediff: 1,
+          store_name: '$store_result.store_name',
+          city: '$store_result.city',
+          state: '$store_result.state'
+      }
+  },
+  //MATCH: Select only the document that have the value of 'datediff' greather than 'avg_datediff'
+  {
+      $match: {
+          $expr: { $gt: ['$datediff', '$avg_datediff']}
+      }
+  },
+  //GROUP: Grouped by 'store_id', 'store_name', 'city' and 'state' and sum the number of orders from this grouping
+  {
+      $group: {
+          _id: {
+              store_id: '$store_id',
+              store_name: '$store_name',
+              city: '$city',
+              state: '$state'
+          },
+          numberoforders: { $sum: 1 }
+      }
+  },
+  //PROJECT: Select only the relevant columns
+  {
+      $project: {
+          _id: 0,
+          store_id: '$_id.store_id',
+          store_name: '$_id.store_name',
+          city: '$_id.city',
+          state: '$_id.state',
+          numberoforders: 1,
+      }
+  }
+])
+
+
+/* 
+------------------------------------------------------------------------
+#             QUERY 10                                                 #
+#   Number of not available products in the Mountain (bike) category   #
+------------------------------------------------------------------------
+*/
+
+db.getCollection('Stocks').aggregate([
+  //LOOKUP: Join with the categories collection to get categories details
+{
+  $lookup: {
+    from: 'Products',
+    localField: 'product_id',
+    foreignField: 'product_id',
+    as: 'product_details'
+  }
+},
+//UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+{
+  $unwind: '$product_details'
+},
+//LOOKUP: Join with the categories collection to get categories details
+{
+  $lookup: {
+    from: 'Categories',
+    localField: 'product_details.category_id',
+    foreignField: 'category_id',
+    as: 'category_details'
+  }
+},
+//UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+{
+  $unwind: '$category_details'
+},
+//MATCH: Selects only the documents in which quantity is equal to 0
+{
+  $match: {
+      'quantity': { $eq: 0}
+        
+  }
+},
+//GROUP: Group by category_id and category_name and count the number of occurrance per category
+{
+  $group: {
+    _id: { category_name: '$category_details.category_name'},
+    NumberOfNotAvailableProducts: { $count: {}}
+  }
+},
+//MATCH: Selects only the documents in which category_details is not empty
+{
+  $match: {
+      "_id.category_name": {$regex: /Mountain/}
+  }
+},
+  //PROJECT: allow us to select the column
+{
+  $project: {
+    _id: 0,
+    category_name: '$_id.category_name',
+    NumberOfNotAvailableProducts: '$NumberOfNotAvailableProducts'
+  }
+}
+])
