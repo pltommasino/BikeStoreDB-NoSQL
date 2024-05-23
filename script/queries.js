@@ -3,7 +3,7 @@ use('BikeStoreDB');
 
 /* 
 ______________________________________________________________________________________________________________________________
-This space is dedicated to update date columns in Orders collections
+This space is dedicated to update date columns in Orders collections and to manage null values
 */
 
 //UPDATE 'order_date' column in 'Orders' collection
@@ -40,6 +40,25 @@ db.Orders.updateMany({
           }
       }
 ]);
+
+//UPDATE 'manager_id' column in 'Staffs' collection
+db.Staffs.updateMany(
+    { manager_id: 'NULL' },
+    { $set: { manager_id: null } }
+);
+
+//UPDATE 'phone' column in 'Customers' collection
+db.Customers.updateMany(
+    { phone: 'NULL' },
+    { $set: { phone: null } }
+);
+
+//UPDATE 'shipped_date' column in 'Orders' collection
+db.Orders.updateMany(
+    { shipped_date: 'NULL' },
+    { $set: { shipped_date: null } }
+);
+
 /* 
 ______________________________________________________________________________________________________________________________
 */
@@ -315,6 +334,57 @@ db.getCollection('Order_items').aggregate([
           _id: 0,
           full_order_price_average: {$round: ['$full_order_price_average', 2]}
       }
+  }
+])
+
+
+/* 
+-----------------------------------------------------
+#             QUERY 6                               #
+#   Number of processing orders, grouped by state   #
+-----------------------------------------------------
+*/
+
+db.getCollection('Orders').aggregate([
+    //LOOKUP: Join with the customers collection to get customers details
+  {
+    $lookup: {
+      from: 'Customers',
+      localField: 'customer_id',
+      foreignField: 'customer_id',
+      as: 'customer_details'
+    }
+  },
+  //UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
+  {
+    $unwind: '$customer_details'
+  },
+  //MATCH: Selects only the documents in which order_status is equal to 2
+  {
+    $match: {
+        "order_status": {$eq: 2}
+    }
+  },
+  //GROUP: by 'state'
+  {
+    $group: {
+      _id: '$customer_details.state',
+      NumberOfProcessingOrders: { $count: {}}
+    }
+  },
+  //SORT: Order by NumberOfProcessingOrders in descending order
+  {
+    $sort: {
+      NumberOfProcessingOrders: -1
+    }
+  },
+  //PROJECT: allow us to select the column
+  {
+    $project: {
+      _id: 0,
+      state: '$_id',
+      NumberOfProcessingOrders: '$NumberOfProcessingOrders'
+    }
   }
 ])
 
