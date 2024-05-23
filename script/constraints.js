@@ -75,9 +75,9 @@ db.createCollection("Orders", {
             order_id: { bsonType: "int" },
             customer_id: { bsonType: "int"},
             order_status: { bsonType: "int"},
-            order_date: { bsonType: "string"},
-            required_date: { bsonType: "string"},
-            shipped_date: { bsonType: ["string", "null"]},
+            order_date: { bsonType: ["string", "date"]},
+            required_date: { bsonType: ["string", "date"]},
+            shipped_date: { bsonType: ["string", "null", "date"]},
             store_id: {bsonType: "int"},
             staff_id: {bsonType: "int"}
         }

@@ -6,24 +6,6 @@ ________________________________________________________________________________
 This space is dedicated to update date columns in Orders collections and to manage null values
 */
 
-//UPDATE 'manager_id' column in 'Staffs' collection
-db.Staffs.updateMany(
-    { manager_id: 'NULL' },
-    { $set: { manager_id: null } }
-);
-
-//UPDATE 'phone' column in 'Customers' collection
-db.Customers.updateMany(
-    { phone: 'NULL' },
-    { $set: { phone: null } }
-);
-
-//UPDATE 'shipped_date' column in 'Orders' collection
-db.Orders.updateMany(
-    { shipped_date: 'NULL' },
-    { $set: { shipped_date: null } }
-);
-
 //UPDATE 'order_date' column in 'Orders' collection
 db.Orders.updateMany({}, [
   {
@@ -59,7 +41,23 @@ db.Orders.updateMany({
       }
 ]);
 
+//UPDATE 'manager_id' column in 'Staffs' collection
+db.Staffs.updateMany(
+    { manager_id: 'NULL' },
+    { $set: { manager_id: null } }
+);
 
+//UPDATE 'phone' column in 'Customers' collection
+db.Customers.updateMany(
+    { phone: 'NULL' },
+    { $set: { phone: null } }
+);
+
+//UPDATE 'shipped_date' column in 'Orders' collection
+db.Orders.updateMany(
+    { shipped_date: 'NULL' },
+    { $set: { shipped_date: null } }
+);
 
 /* 
 ______________________________________________________________________________________________________________________________
@@ -101,14 +99,6 @@ db.getCollection('Order_items').aggregate([
   //LIMIT: limit to the top 3 result
   {
     $limit: 3
-  },
-  //PROJECT: allow us to select the column
-  {
-    $project: { 
-      _id: 0,
-      order_id: '$_id', 
-      totalcost: '$totalcost'
-    }
   }
 ])
 
@@ -254,7 +244,7 @@ db.getCollection('Products').aggregate([
       _id: 0,
       brand_id: '$_id',
       brand_name: '$brand_details.brand_name',
-      count_brand: '$count_brand'
+      count_brand: 1
     }
   }
 ]);
@@ -478,11 +468,11 @@ db.getCollection('Products').aggregate([
           _id: 0,
           product_id: '$_id.product_id',
           product_name: '$_id.product_name',
-          category_name: '$_id.category_name',
           model_year: '$_id.model_year',
           list_price: '$_id.list_price',
           quantity: '$_id.quantity',
-          total_quantitysold: '$total_quantitysold'
+          category_name: '$_id.category_name',
+          total_quantitysold: 1
       }
   }
 ]);
@@ -521,6 +511,12 @@ db.getCollection('Products').aggregate([
     CategoryCount_inProduct: { $count: {}}
   }
 },
+//SORT: Order by CategoryCount_inProduct in descending order
+{
+  $sort: {
+    CategoryCount_inProduct: -1
+  }
+},
 //PROJECT: allow us to select the column
 {
   $project: {
@@ -528,13 +524,6 @@ db.getCollection('Products').aggregate([
     category_id: '$_id.category_id',
     category_name: '$_id.category_name',
     CategoryCount_inProduct: '$CategoryCount_inProduct'
-  }
-},
-//SORT: Order by CategoryCount_inProduct in descending order
-{
-  $sort: {
-    CategoryCount_inProduct: -1,
-    category_id: 1
   }
 },
 //LIMIT: limit to the top 3 result
@@ -553,9 +542,6 @@ ________________________________________________________________________________
 In this query we want to show for each store the number of orders that have been shipped in a time above the average shipping 
 time computed among all the orders.
 */
-
-// Select the database to use.
-use('BikeStoreDB');
 
 const avgDatediffResult = db.getCollection('Orders').aggregate([
   //MATCH: Select only the 'order_status' equal to 4
