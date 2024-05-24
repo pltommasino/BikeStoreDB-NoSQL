@@ -1,4 +1,2 @@
 .DS_Store
 .env
-script/handling.py
-script/processing.ipynb
