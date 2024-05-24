@@ -115,12 +115,15 @@ db.getCollection('Order_items').aggregate([
 
 /* 
 --------------------------------------------
-#             QUERY 2                      #
+#                 QUERY 2                  #
 #   The 3 most expensive orders' details   #
 --------------------------------------------
+______________________________________________________________________________________________________________________________
+This aggregation query outputs informations of customers and stores involved in the 3 most expensive orders.
 */
 
 db.getCollection('Order_items').aggregate([
+  //PROJECT: allow us to select the column  
   {
   $project: { 
     order_id: 1, 
@@ -145,7 +148,7 @@ db.getCollection('Order_items').aggregate([
 {
   $limit: 3
 },
-//LOOKUP: Join with the categories collection to get categories details
+//LOOKUP: Join with the orders collection to get orders details
 {
   $lookup: {
     from: 'Orders',
@@ -158,7 +161,7 @@ db.getCollection('Order_items').aggregate([
 {
   $unwind: '$order_details'
 },
-    //LOOKUP: Join with the categories collection to get categories details
+    //LOOKUP: Join with the customers collection to get customers details
 {
   $lookup: {
     from: 'Customers',
@@ -171,7 +174,7 @@ db.getCollection('Order_items').aggregate([
 {
   $unwind: '$customer_details'
 },
-      //LOOKUP: Join with the categories collection to get categories details
+      //LOOKUP: Join with the stores collection to get stores details
 {
   $lookup: {
     from: 'Stores',
@@ -184,7 +187,7 @@ db.getCollection('Order_items').aggregate([
 {
   $unwind: '$store_details'
 },
-//SORT: Order by CategoryCount_inProduct in descending order
+//SORT: Order by order_id in ascending order
 {
   $sort: {
     _id: 1
@@ -262,9 +265,11 @@ db.getCollection('Products').aggregate([
 
 /* 
 --------------------------------------------------
-#             QUERY 4                            #
+#                    QUERY 4                     #
 #   Number of bicycles in stock group by Store   #
 --------------------------------------------------
+______________________________________________________________________________________________________________________________
+This aggregation query outputs store_name, state and Total_Bicycle_In_Stocks, grouped by store.
 */
 
 db.getCollection('Stores').aggregate([
@@ -274,18 +279,18 @@ db.getCollection('Stores').aggregate([
     from: 'Stocks',
     localField: 'store_id',
     foreignField: 'store_id',
-    as: 'store_details'
+    as: 'stocks_details'
   }
 },
 //UNWIND: Deconstructs an array field from the input documents to output a document for each element. 
 {
-  $unwind: '$store_details'
+  $unwind: '$stocks_details'
 },
 //GROUP: Group by store_name and store_state and count the number of bibycle per store
 {
   $group: {
     _id: {store_name: '$store_name', state: '$state'},
-    Total_Bicycle_In_Stocks: { $sum : '$store_details.quantity'}
+    Total_Bicycle_In_Stocks: { $sum : '$stocks_details.quantity'}
   }
 },
 //SORT: Order by Total_Bicycle_In_Stocks in descending order
@@ -350,9 +355,11 @@ db.getCollection('Order_items').aggregate([
 
 /* 
 -----------------------------------------------------
-#             QUERY 6                               #
+#                      QUERY 6                      #
 #   Number of processing orders, grouped by state   #
 -----------------------------------------------------
+______________________________________________________________________________________________________________________________
+In this query we wanted to show the number of processing orders grouped by customer's State.
 */
 
 db.getCollection('Orders').aggregate([
@@ -369,7 +376,7 @@ db.getCollection('Orders').aggregate([
   {
     $unwind: '$customer_details'
   },
-  //MATCH: Selects only the documents in which order_status is equal to 2
+  //MATCH: Selects only the documents in which order_status is equal to 2 (the number 2 notices a processing order)
   {
     $match: {
         "order_status": {$eq: 2}
@@ -489,9 +496,11 @@ db.getCollection('Products').aggregate([
 
 /* 
 --------------------------------------------------
-#             QUERY 8                            #
+#                    QUERY 8                     #
 #   The most featured category in the products   #
 --------------------------------------------------
+______________________________________________________________________________________________________________________________
+This aggregation query outputs category_id, category_name and CategoryCount_inProduct, showing the most featured category in the products.
 */
 
 db.getCollection('Products').aggregate([
@@ -680,13 +689,15 @@ db.getCollection('Orders').aggregate([
 
 /* 
 ------------------------------------------------------------------------
-#             QUERY 10                                                 #
+#                             QUERY 10                                 #
 #   Number of not available products in the Mountain (bike) category   #
 ------------------------------------------------------------------------
+______________________________________________________________________________________________________________________________
+With this query we want to show the number of not available products in the Mountain (bike) category.
 */
 
 db.getCollection('Stocks').aggregate([
-  //LOOKUP: Join with the categories collection to get categories details
+  //LOOKUP: Join with the products collection to get products details
 {
   $lookup: {
     from: 'Products',
@@ -719,14 +730,14 @@ db.getCollection('Stocks').aggregate([
         
   }
 },
-//GROUP: Group by category_id and category_name and count the number of occurrance per category
+//GROUP: Group by category_name and count the number of not avilable products per category
 {
   $group: {
     _id: { category_name: '$category_details.category_name'},
     NumberOfNotAvailableProducts: { $count: {}}
   }
 },
-//MATCH: Selects only the documents in which category_details is not empty
+//MATCH: Selects only the documents in which appear the word 'mountain'
 {
   $match: {
       "_id.category_name": {$regex: /Mountain/}

@@ -1,5 +1,11 @@
 #!/bin/sh
 
+#In order to run this script you have to install the MongoDB Database Tools, a collection of command-line utilities
+
+#The command 'mongoimport' allows you to import documents from files as CSV or TSV
+
+#In this case we are going to import documents from CSV files, by specifying the target database and collections  
+
 mongoimport --type csv --headerline --db BikeStoreDB --collection Brands --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/brands.csv
 mongoimport --type csv --headerline --db BikeStoreDB --collection Categories  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/categories.csv
 mongoimport --type csv --headerline --db BikeStoreDB --collection Customers  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/customers.csv

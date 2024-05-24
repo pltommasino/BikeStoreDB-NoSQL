@@ -1,6 +1,6 @@
 use('BikeStoreDB');
 
-// Brands collection constraints
+// Brands collection validation schema
 db.createCollection("Brands", {
     validator: { $jsonSchema: {
         required: [ "brand_id", "brand_name"],
@@ -12,9 +12,10 @@ db.createCollection("Brands", {
 }
 } );
 
+// Unique index creation in Brands collection
 db.Brands.createIndex( { brand_id: 1 }, { unique: true});
 
-// Categories collection constraints
+// Categories collection validation schema
 db.createCollection("Categories", {
     validator: { $jsonSchema: {
         required: [ "category_id", "category_name"],
@@ -26,9 +27,10 @@ db.createCollection("Categories", {
 }
 } );
 
+// Unique index creation in Categories collection
 db.Categories.createIndex( { category_id: 1 }, { unique: true});
 
-// Customers collection constraints
+// Customers collection validation schema
 db.createCollection("Customers", {
     validator: { $jsonSchema: {
         required: [ "customer_id", "first_name", "last_name", "phone", "email", "street", "city", "state", "zip_code"],
@@ -47,9 +49,10 @@ db.createCollection("Customers", {
 }
 } );
 
+// Unique index creation in Customers collection
 db.Customers.createIndex( { customer_id: 1 }, { unique: true});
 
-// Order_items collection constraints
+// Order_items collection validation schema
 db.createCollection("Order_items", {
     validator: { $jsonSchema: {
         required: [ "order_id", "item_id", "product_id", "quantity", "list_price", "discount"],
@@ -65,9 +68,10 @@ db.createCollection("Order_items", {
 }
 } );
 
+// Unique index creation in Order_items collection
 db.Order_items.createIndex( { order_id: 1, item_id: 1 }, { unique: true});
 
-// Orders collection constraints
+// Orders collection validation schema
 db.createCollection("Orders", {
     validator: { $jsonSchema: {
         required: [ "order_id", "customer_id", "order_status", "order_date", "required_date", "shipped_date", "store_id", "staff_id"],
@@ -85,9 +89,10 @@ db.createCollection("Orders", {
 }
 } );
 
+// Unique index creation in Orders collection
 db.Orders.createIndex( { order_id: 1 }, { unique: true});
 
-// Products collection constraints
+// Products collection validation schema
 db.createCollection("Products", {
     validator: { $jsonSchema: {
         required: [ "product_id", "product_name", "brand_id", "category_id", "model_year", "list_price"],
@@ -103,9 +108,10 @@ db.createCollection("Products", {
 }
 } );
 
+// Unique index creation in Products collection
 db.Products.createIndex( { product_id: 1 }, { unique: true});
 
-// Staffs collection constraints
+// Staffs collection validation schema
 db.createCollection("Staffs", {
     validator: { $jsonSchema: {
         required: [ "staff_id", "first_name", "last_name", "email", "phone", "active", "store_id", "manager_id"],
@@ -123,9 +129,10 @@ db.createCollection("Staffs", {
 }
 } );
 
+// Unique index creation in Staffs collection
 db.Staffs.createIndex( { staff_id: 1 }, { unique: true});
 
-// Stocks collection constraints
+// Stocks collection validation schema
 db.createCollection("Stocks", {
     validator: { $jsonSchema: {
         required: [ "store_id", "product_id", "quantity"],
@@ -138,9 +145,10 @@ db.createCollection("Stocks", {
 }
 } );
 
+// Unique index creation in Stocks collection
 db.Stocks.createIndex( { store_id: 1, product_id: 1 }, { unique: true});
 
-// Stores collection constraints
+// Stores collection validation schema
 db.createCollection("Stores", {
     validator: { $jsonSchema: {
         required: [ "store_id", "store_name", "phone", "email", "street", "city", "state", "zip_code"],
@@ -158,4 +166,5 @@ db.createCollection("Stores", {
 }
 } );
 
+// Unique index creation in Stores collection
 db.Stores.createIndex( { store_id: 1 }, { unique: true});
