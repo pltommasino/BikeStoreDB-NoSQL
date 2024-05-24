@@ -1,11 +1,11 @@
 #!/bin/sh
 
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Brands --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/brands.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Categories  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/categories.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Customers  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/customers.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Order_items  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/order_items.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Orders  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/orders.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Products  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/products.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Staffs  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/staffs.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Stocks  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/stocks.csv
-mongoimport --uri "mongodb+srv://pltommasino:D9FSSp1L6TOq1vMO@cluster-bikestoredb.hoscnft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster-BikeStoreDB" --type csv --headerline --db BikeStoreDB --collection Stores  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/stores.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Brands --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/brands.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Categories  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/categories.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Customers  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/customers.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Order_items  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/order_items.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Orders  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/orders.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Products  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/products.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Staffs  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/staffs.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Stocks  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/stocks.csv
+mongoimport --type csv --headerline --db BikeStoreDB --collection Stores  --file /Users/pasquale/Documents/GitHub/BikeStoreDB-NoSQL/data/stores.csv
