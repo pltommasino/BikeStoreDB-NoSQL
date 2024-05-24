@@ -30,7 +30,7 @@ Below you see the two commands on how you can start and stop the service:
 ```sh
 brew services start mongodb-community@7.0
 ```
-<br>
+
 - To stop a `mongod` running as a macOS service, use the following command as needed:
 
 ```sh
