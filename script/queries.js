@@ -554,125 +554,128 @@ In this query we want to show for each store the number of orders that have been
 time computed among all the orders.
 */
 
-// Select the database to use.
-use('BikeStoreDB');
-
-const avgDatediffResult = db.getCollection('Orders').aggregate([
-  //MATCH: Select only the 'order_status' equal to 4
-  {
-      $match: {
-          order_status: 4
-      }
-  },
-  //GROUP: Group to calculate the average of days passed from 'order_date' to 'shipped_date'
-  {
-      $group: {
-          _id: null,
-          avg_datediff: {
-              $avg: {
-                  $dateDiff: {
-                      startDate: '$order_date',
-                      endDate: '$shipped_date',
-                      unit: 'day'
-                  }
-              }
-          }
-      }
-  },
-  //PROJECT: Select only the result of 'avg_datediff' 
-  {
-      $project: {
-        _id: 0,
-        avg_datediff: {$round: '$avg_datediff'}
-      }
-  }
-  //Transform it into array
-]).toArray();
-
-//Create another constant to extract the result...
-const avgDatediff = avgDatediffResult[0].avg_datediff;
-
-//... for adding it, in all documents in the 'Orders' collection
-db.getCollection('Orders').updateMany(
-  //SET: Add the new column with the specific value of 'avgDateDiff'
-  {
-      $set: { avg_datediff: avgDatediff }
-  }
-);
-
+//Calculate the 'avg_datediff' and save in a new collection 'AvgDatediffResult'
 db.getCollection('Orders').aggregate([
   //MATCH: Select only the 'order_status' equal to 4
   {
-      $match: {
-          order_status: 4
-      }
+    $match: {
+      order_status: 4
+    }
   },
-  //ADDFIELDS: Add a column with the difference of 'shipped_date' and 'order_date'
+  //GROUP: Group to calculate the average of days passed from 'order_date' to 'shipped_date'
   {
-      $addFields: {
-          datediff: {
-              $dateDiff: {
-                  startDate: '$order_date',
-                  endDate: '$shipped_date',
-                  unit: 'day'
-              }
+    $group: {
+      _id: null,
+      avg_datediff: {
+        $avg: {
+          $dateDiff: {
+            startDate: '$order_date',
+            endDate: '$shipped_date',
+            unit: 'day'
           }
+        }
       }
+    }
+  },
+  //PROJECT: Select only the result of 'avg_datediff' 
+  {
+    $project: {
+      _id: 0,
+      avg_datediff: {$round: '$avg_datediff'}
+    }
+  },
+  //OUT: Save it in a new collection
+  {
+    $out: 'AvgDatediffResult'
+  }
+]);
+
+//Extract the value 'avg_datediff' from the collection 'AvgDatediffResult'
+const avgDatediffResult = db.getCollection('AvgDatediffResult').findOne();
+const avgDatediff = avgDatediffResult.avg_datediff;
+
+db.getCollection('Orders').aggregate([
+  //MATCH: Select only the 'order_status' equal to 4 
+  {
+    $match: {
+      order_status: 4
+    }
+  },
+  //ADDFIELDS: Add a column with the difference of 'shipped_date' and 'order_date', and the 'avf_datediff' value
+  {
+    $addFields: {
+      datediff: {
+        $dateDiff: {
+          startDate: '$order_date',
+          endDate: '$shipped_date',
+          unit: 'day'
+        }
+      },
+      avg_datediff: avgDatediff
+    }
   },
   //LOOKUP: join with 'Stores'
   {
-      $lookup: {
-        from: 'Stores',
-        localField: 'store_id',
-        foreignField: 'store_id',
-        as: 'store_result'
-      }
+    $lookup: {
+      from: 'Stores',
+      localField: 'store_id',
+      foreignField: 'store_id',
+      as: 'store_result'
+    }
   },
   //UNWIND: Deconstructs an array field from the input documents to output a document for each element.
   {
-      $unwind: '$store_result'
+    $unwind: '$store_result'
   },
   //PROJECT: Select only the relevant columns for an easy calculation
   {
-      $project: {
-          store_id: 1,
-          avg_datediff: 1,
-          datediff: 1,
-          store_name: '$store_result.store_name',
-          city: '$store_result.city',
-          state: '$store_result.state'
-      }
+    $project: {
+      store_id: 1,
+      avg_datediff: 1,
+      datediff: 1,
+      store_name: '$store_result.store_name',
+      city: '$store_result.city',
+      state: '$store_result.state'
+    }
   },
   //MATCH: Select only the document that have the value of 'datediff' greather than 'avg_datediff'
   {
-      $match: {
-          $expr: { $gt: ['$datediff', '$avg_datediff']}
-      }
+    $match: {
+      $expr: { $gt: ['$datediff', '$avg_datediff']}
+    }
   },
   //GROUP: Grouped by 'store_id', 'store_name', 'city' and 'state' and sum the number of orders from this grouping
   {
-      $group: {
-          _id: {
-              store_id: '$store_id',
-              store_name: '$store_name',
-              city: '$city',
-              state: '$state'
-          },
-          numberoforders: { $sum: 1 }
-      }
+    $group: {
+      _id: {
+        store_id: '$store_id',
+        store_name: '$store_name',
+        city: '$city',
+        state: '$state'
+      },
+      numberoforders: { $sum: 1 }
+    }
   },
   //PROJECT: Select only the relevant columns
   {
-      $project: {
-          _id: 0,
-          store_id: '$_id.store_id',
-          store_name: '$_id.store_name',
-          city: '$_id.city',
-          state: '$_id.state',
-          numberoforders: 1,
-      }
+    $project: {
+      _id: 0,
+      store_id: '$_id.store_id',
+      numberoforders: '$numberoforders',
+      store_name: '$_id.store_name',
+      city: '$_id.city',
+      state: '$_id.state'
+    }
+  },
+  //SORT: Order in descendigly way, the 'numberoforders' values
+  {
+    $sort: {
+        numberoforders: -1
+    }
   }
-])
+]);
+
+
 
 
 /* 
