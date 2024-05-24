@@ -3,7 +3,7 @@ use('BikeStoreDB');
 
 /* 
 ______________________________________________________________________________________________________________________________
-This space is dedicated to update date columns in Orders collections and to manage null values
+This space is dedicated to update date columns in collections and to manage null values
 */
 
 //UPDATE 'manager_id' column in 'Staffs' collection
