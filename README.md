@@ -20,9 +20,35 @@ MongoDB stores data in flexible documents. Instead of having multiple tables you
 MongoDB can be installed locally, which will allow you to host your own MongoDB server on your hardware. This requires you to manage your server, upgrades, and any other maintenance.
 <br>
 <br>
-For this project we are going to use *MongoDB Atlas*, a cloud database platform. In this, we set up a free "Shared Cluster" then choose preferred cloud provider and region. By default, MongoDB Atlas is completely locked down and has no external access. You will need to set up a user and add your IP address to the list of allowed IP addresses.
+For this project we are going to use MongoDB from a MacOS system. Next we will only explain how we activate the MongoDB server on our computer, for more details on how you can install MongoDB Community Edition on MacOS, we recommend following this [guide](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/#std-label-brew-installs-dbtools).
+<br>
+<br>
+
+Below you see the two commands on how you can start and stop the service:
+
+- To run MongoDB (i.e. the `mongod` process) as a **macOS service**, run:
+
+```sh
+brew services start mongodb-community@7.0
+```
+<br>
+
+- To stop a `mongod` running as a macOS service, use the following command as needed:
+
+```sh
+brew services stop mongodb-community@7.0
+```
+<br>
 
 ## SCRIPT
+
+Three files can be found within the `script` folder:
+
+1. `collection.js`, where we created the "skeleton" of our collections
+
+2. `mongo_import.sh`, where with the use of `mongoimport` we were able to load CSV files (in the `data` folder) into our collections in the database created.
+
+3. `queries.js`, where we build the queries "translated" from the SQL language of the project linked to this (see [BikeStoreDB-SQL](https://github.com/pltommasino/BikeStoreDB-SQL))
 
 
 ## DATA
