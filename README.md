@@ -38,7 +38,6 @@ brew services start mongodb-community@7.0
 ```sh
 brew services stop mongodb-community@7.0
 ```
-<br>
 
 ## SCRIPT
 
