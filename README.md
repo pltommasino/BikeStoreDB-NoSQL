@@ -23,7 +23,6 @@ MongoDB can be installed locally, which will allow you to host your own MongoDB 
 For this project we are going to use MongoDB from a MacOS system. Next we will only explain how we activate the MongoDB server on our computer, for more details on how you can install MongoDB Community Edition on MacOS, we recommend following this [guide](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/#std-label-brew-installs-dbtools).
 <br>
 <br>
-
 Below you see the two commands on how you can start and stop the service:
 
 - To run MongoDB (i.e. the `mongod` process) as a **macOS service**, run:
@@ -32,7 +31,6 @@ Below you see the two commands on how you can start and stop the service:
 brew services start mongodb-community@7.0
 ```
 <br>
-
 - To stop a `mongod` running as a macOS service, use the following command as needed:
 
 ```sh
